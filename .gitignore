@@ -5,14 +5,19 @@ __pycache__/
 *.pyd
 *.pytest_cache/
 .pytest_cache/
+*.egg-info/
+
+# Environment
 *.env
 .env
+!.env.example
 
 # Virtual environment
 venv/
+.venv/
 
 # Database and local data
-# chroma_db/
+chroma_db/
 
 # VS Code
 .vscode/
@@ -20,3 +25,9 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
