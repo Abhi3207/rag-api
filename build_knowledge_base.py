@@ -5,6 +5,7 @@ Usage
 -----
     python build_knowledge_base.py                        # defaults: profile.txt, user "default"
     python build_knowledge_base.py -f resume.txt -u alice  # custom file and user
+    python build_knowledge_base.py --strategy recursive --chunk-size 300
 """
 
 from __future__ import annotations
@@ -17,7 +18,8 @@ from chromadb.utils.embedding_functions.ollama_embedding_function import (
     OllamaEmbeddingFunction,
 )
 
-from config import settings
+from src.rag_api.config import settings
+from src.rag_api.services.chunking import chunk_text
 
 
 def parse_args() -> argparse.Namespace:
@@ -37,32 +39,54 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Overwrite existing chunks for this user (default: skip duplicates)",
     )
+    parser.add_argument(
+        "--strategy",
+        choices=["paragraph", "recursive", "semantic"],
+        default=settings.DEFAULT_CHUNK_STRATEGY,
+        help=f"Chunking strategy (default: {settings.DEFAULT_CHUNK_STRATEGY})",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=settings.DEFAULT_CHUNK_SIZE,
+        help=f"Target chunk size in characters (default: {settings.DEFAULT_CHUNK_SIZE})",
+    )
+    parser.add_argument(
+        "--chunk-overlap",
+        type=int,
+        default=settings.DEFAULT_CHUNK_OVERLAP,
+        help=f"Overlap between chunks (default: {settings.DEFAULT_CHUNK_OVERLAP})",
+    )
     return parser.parse_args()
 
 
-def load_and_chunk(filepath: str) -> list[str]:
-    """Read a text file and split it into paragraph-level chunks."""
+def load_file(filepath: str) -> str:
+    """Read a text file and return its contents."""
     try:
         with open(filepath, "r", encoding="utf-8") as f:
-            text = f.read()
+            return f.read()
     except FileNotFoundError:
         print(f"❌  File not found: {filepath}")
         sys.exit(1)
-
-    chunks = [chunk.strip() for chunk in text.split("\n\n") if chunk.strip()]
-    if not chunks:
-        print(f"⚠️  No non-empty paragraphs found in {filepath}")
-        sys.exit(1)
-
-    return chunks
 
 
 def main() -> None:
     args = parse_args()
 
-    # --- Load text ---
-    chunks = load_and_chunk(args.file)
-    print(f"📄  Loaded {len(chunks)} chunks from {args.file}")
+    # --- Load and chunk text ---
+    text = load_file(args.file)
+    chunks = chunk_text(
+        text,
+        strategy=args.strategy,
+        chunk_size=args.chunk_size,
+        chunk_overlap=args.chunk_overlap,
+    )
+
+    if not chunks:
+        print(f"⚠️  No non-empty chunks found in {args.file}")
+        sys.exit(1)
+
+    print(f"📄  Loaded {len(chunks)} chunks from {args.file} (strategy: {args.strategy})")
 
     # --- Connect to ChromaDB ---
     client = chromadb.PersistentClient(path=settings.CHROMA_DB_PATH)
@@ -94,7 +118,12 @@ def main() -> None:
             ids, chunks = list(ids), list(chunks)
 
     metadatas = [
-        {"source": "profile", "user_name": args.user, "chunk_index": i}
+        {
+            "source": "profile",
+            "user_name": args.user,
+            "chunk_index": i,
+            "chunk_strategy": args.strategy,
+        }
         for i in range(len(chunks))
     ]
 
