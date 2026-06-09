@@ -27,7 +27,7 @@ A production-grade **Retrieval-Augmented Generation** API built with **FastAPI**
 - **Admin Analytics** (`GET /admin/stats`) — Knowledge base statistics and user metrics
 - **API Key Auth** — Optional `X-API-Key` authentication (opt-in)
 - **Rate Limiting** — Configurable per-endpoint rate limits via SlowAPI
-- **Async Throughout** — Non-blocking Ollama calls & ChromaDB queries
+- **Fully Async** — Non-blocking Ollama calls, ChromaDB queries, and health checks
 - **User Filtering** — Scope queries to a specific user's documents
 - **CORS Enabled** — Ready for frontend integration
 - **Configurable** — All settings via environment variables or `.env` file
@@ -212,7 +212,7 @@ The streaming endpoints (`/ask/stream`, `/chat/stream`) use Server-Sent Events w
 ## Testing
 
 ```bash
-pip install pytest httpx
+pip install pytest pytest-cov httpx
 pytest tests/ -v
 ```
 
@@ -231,20 +231,24 @@ rag-api/
 │       ├── __init__.py              # Package init, version
 │       ├── app.py                   # FastAPI app factory, lifespan, middleware
 │       ├── config.py                # Centralised settings (env / .env)
-│       ├── database.py              # ChromaDB client & collection
+│       ├── database.py              # ChromaDB client & collection (lazy init)
 │       ├── models.py                # Pydantic request/response models
 │       ├── routes/
+│       │   ├── __init__.py
 │       │   ├── health.py            # GET /health, GET /admin/stats
 │       │   ├── documents.py         # Documents CRUD
 │       │   └── rag.py               # /ask, /ask/stream, /chat, /chat/stream
 │       ├── services/
+│       │   ├── __init__.py
 │       │   ├── chunking.py          # Pluggable chunking strategies
 │       │   ├── retrieval.py         # Context retrieval from ChromaDB
 │       │   └── llm.py               # Async Ollama interaction + streaming
 │       └── middleware/
+│           ├── __init__.py
 │           ├── auth.py              # Optional API key authentication
 │           └── rate_limit.py        # SlowAPI rate limiting
 ├── tests/
+│   ├── __init__.py
 │   ├── conftest.py                  # Shared fixtures
 │   ├── test_health.py               # Health & admin stats tests
 │   ├── test_documents.py            # Document CRUD tests
@@ -255,8 +259,9 @@ rag-api/
 ├── build_knowledge_base.py          # CLI tool to ingest text files
 ├── profile.txt                      # Sample profile data
 ├── requirements.txt                 # Python dependencies
-├── Dockerfile                       # Container build (with HEALTHCHECK)
+├── Dockerfile                       # Container build (multi-stage + HEALTHCHECK)
 ├── .env.example                     # Environment variable template
+├── .gitignore
 └── README.md
 ```
 

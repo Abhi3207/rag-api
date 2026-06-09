@@ -1,11 +1,11 @@
 My name is Yash.
 I'm currently learning about cloud computing, AI, and DevOps.
 
-My career goal is to become a , DevOps engineer, cloud architect, AI engineer.
-I'm especially interested in , automation, infrastructure as code, machine learning.
+My career goal is to become a DevOps engineer, cloud architect, or AI engineer.
+I'm especially interested in automation, infrastructure as code, and machine learning.
 
-I have experience with , Python, JavaScript, AWS, Docker.
+I have experience with Python, JavaScript, AWS, and Docker.
 I'm currently building projects on NextWork to grow my hands-on skills.
 
-For fun, I enjoy , hiking, playing guitar, reading sci-fi novels.
-A fun fact about me is , I once ran a marathon, I can solve a Rubik's cube in under a minute.
+For fun, I enjoy hiking, playing guitar, and reading sci-fi novels.
+A fun fact about me is I once ran a marathon and I can solve a Rubik's cube in under a minute.

@@ -12,7 +12,7 @@ import pytest
 # startup check from making a real network call.
 with patch("ollama.list", return_value=MagicMock()):
     from src.rag_api.app import app
-    from src.rag_api.database import collection
+    from src.rag_api.database import get_collection
 
 from fastapi.testclient import TestClient
 
@@ -31,6 +31,7 @@ def cleanup():
     """Remove test documents after each test."""
     yield
     try:
+        collection = get_collection()
         results = collection.get(where={"user_name": TEST_USER})
         if results["ids"]:
             collection.delete(ids=results["ids"])

@@ -4,13 +4,15 @@ Health check and admin statistics routes.
 
 from __future__ import annotations
 
+import asyncio
+import time
 from collections import Counter
 
 import ollama
 from fastapi import APIRouter, HTTPException
 
 from src.rag_api.config import settings
-from src.rag_api.database import collection
+from src.rag_api.database import get_collection
 from src.rag_api.models import AdminStatsResponse, HealthResponse
 
 router = APIRouter(tags=["System"])
@@ -21,18 +23,19 @@ router = APIRouter(tags=["System"])
 # ---------------------------------------------------------------------------
 
 @router.get("/health", response_model=HealthResponse)
-def health_check():
+async def health_check():
     """Check connectivity to Ollama and ChromaDB."""
     ollama_status = "ok"
     try:
-        ollama.list()
+        await asyncio.to_thread(ollama.list)
     except Exception:
         ollama_status = "unreachable"
 
     chroma_status = "ok"
     doc_count = 0
     try:
-        doc_count = collection.count()
+        collection = get_collection()
+        doc_count = await asyncio.to_thread(collection.count)
     except Exception:
         chroma_status = "unreachable"
 
@@ -50,10 +53,11 @@ def health_check():
 # ---------------------------------------------------------------------------
 
 @router.get("/admin/stats", response_model=AdminStatsResponse)
-def admin_stats():
+async def admin_stats():
     """Return operational statistics about the knowledge base."""
     try:
-        all_docs = collection.get()
+        collection = get_collection()
+        all_docs = await asyncio.to_thread(collection.get)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ChromaDB get failed: {exc}") from exc
 

@@ -10,7 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, File, HTTPException, Query, Request, UploadFile
 
 from src.rag_api.config import settings
-from src.rag_api.database import collection
+from src.rag_api.database import get_collection
 from src.rag_api.middleware.rate_limit import limiter
 from src.rag_api.models import ChunkStrategy, DocumentOut, DocumentSubmission
 from src.rag_api.services.chunking import chunk_text
@@ -47,7 +47,7 @@ async def add_document(submission: DocumentSubmission, request: Request):
     ]
 
     try:
-        await asyncio.to_thread(collection.upsert, ids=ids, documents=chunks, metadatas=metadatas)
+        await asyncio.to_thread(get_collection().upsert, ids=ids, documents=chunks, metadatas=metadatas)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ChromaDB upsert failed: {exc}") from exc
 
@@ -108,7 +108,7 @@ async def upload_document(
     ]
 
     try:
-        await asyncio.to_thread(collection.upsert, ids=ids, documents=chunks, metadatas=metadatas)
+        await asyncio.to_thread(get_collection().upsert, ids=ids, documents=chunks, metadatas=metadatas)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ChromaDB upsert failed: {exc}") from exc
 
@@ -136,7 +136,7 @@ async def list_documents(
         get_params: dict = {"limit": limit}
         if user:
             get_params["where"] = {"user_name": user}
-        results = await asyncio.to_thread(collection.get, **get_params)
+        results = await asyncio.to_thread(get_collection().get, **get_params)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"ChromaDB get failed: {exc}") from exc
 
@@ -155,13 +155,13 @@ async def list_documents(
 async def delete_user_documents(user_name: str, request: Request):
     """Delete all chunks belonging to a specific user."""
     try:
-        results = await asyncio.to_thread(collection.get, where={"user_name": user_name})
+        results = await asyncio.to_thread(get_collection().get, where={"user_name": user_name})
         if not results["ids"]:
             raise HTTPException(
                 status_code=404,
                 detail=f"No documents found for user '{user_name}'.",
             )
-        await asyncio.to_thread(collection.delete, ids=results["ids"])
+        await asyncio.to_thread(get_collection().delete, ids=results["ids"])
     except HTTPException:
         raise
     except Exception as exc:

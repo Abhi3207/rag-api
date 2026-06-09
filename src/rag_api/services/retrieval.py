@@ -9,7 +9,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from src.rag_api.database import collection
+from src.rag_api.database import get_collection
 
 
 async def retrieve_context(
@@ -35,7 +35,7 @@ async def retrieve_context(
         query_params["where"] = {"user_name": user}
 
     try:
-        results = await asyncio.to_thread(collection.query, **query_params)
+        results = await asyncio.to_thread(get_collection().query, **query_params)
     except Exception as exc:
         raise HTTPException(
             status_code=502,

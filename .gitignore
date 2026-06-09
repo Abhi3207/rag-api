@@ -6,6 +6,8 @@ __pycache__/
 *.pytest_cache/
 .pytest_cache/
 *.egg-info/
+dist/
+build/
 
 # Environment
 *.env
@@ -19,8 +21,17 @@ venv/
 # Database and local data
 chroma_db/
 
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
 # VS Code
 .vscode/
+
+# JetBrains IDEs
+.idea/
 
 # OS files
 .DS_Store
