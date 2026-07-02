@@ -34,6 +34,8 @@ A production-grade **Retrieval-Augmented Generation** API built with **FastAPI**
 
 ## Prerequisites
 
+
+
 | Dependency | Version |
 |------------|---------|
 | Python     | 3.10+   |

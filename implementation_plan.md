@@ -9,7 +9,9 @@ The project is a minimal RAG (Retrieval-Augmented Generation) API with:
 - Hardcoded config (model names, DB paths, Ollama URLs)
 - No error handling, no tests, no requirements file, barebones README
 
-## Proposed Changes
+
+
+## Proposed Changes, need to be implemented
 
 The goal is to transform this into a **production-grade, well-structured RAG API** with expanded scope and clean architecture.
 
